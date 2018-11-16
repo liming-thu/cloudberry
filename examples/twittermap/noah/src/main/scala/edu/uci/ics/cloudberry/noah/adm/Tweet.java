@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import edu.uci.ics.cloudberry.util.Rectangle;
-
-import java.io.IOException;
 import java.util.*;
 
 
@@ -28,7 +26,7 @@ public class Tweet {
     public static String USER = "user";
     public static String PLACE = "place";
 
-    public static void appendTweetPlainFields(JsonNode rootNode, StringBuilder admSB) {
+    public static void appendTweetPlainFields(JsonNode rootNode, StringBuilder admSB) throws Exception{
         ADM.keyValueToSbWithComma(admSB, CREATE_AT, ADM.mkDateTimeStringFromTweet(rootNode.path("created_at").asText()));
         ADM.keyValueToSbWithComma(admSB, ID, ADM.mkInt64Constructor(rootNode.path("id").asLong()));
         ADM.keyValueToSbWithComma(admSB, TEXT, ADM.mkQuoteOnly(rootNode.path("text").asText()));
@@ -62,7 +60,7 @@ public class Tweet {
         return sbHashtag.toString();
     }
 
-    public static void appendHashtags(JsonNode rootNode, StringBuilder admSB) {
+    public static void appendHashtags(JsonNode rootNode, StringBuilder admSB)  throws Exception{
         if (!rootNode.path("entities").isNull() && !rootNode.path("entities").path("hashtags").isNull()) {
             JsonNode hashtagNode = rootNode.path("entities").path("hashtags");
             if (hashtagNode != null && !hashtagNode.toString().equals("[]")) {
@@ -87,7 +85,7 @@ public class Tweet {
         return sbUserMentions.toString();
     }
 
-    public static void appendUserMentsions(JsonNode rootNode, StringBuilder admSB) {
+    public static void appendUserMentsions(JsonNode rootNode, StringBuilder admSB)  throws Exception {
         if (!rootNode.path("entities").isNull() && !rootNode.path("entities").path("user_mentions").isNull()) {
             JsonNode userMentionsNode = rootNode.path("entities").path("user_mentions");
             if (userMentionsNode.iterator().hasNext())
@@ -95,7 +93,7 @@ public class Tweet {
         }
     }
 
-    public static void appendGeoCoordinate(JsonNode rootNode, StringBuilder admSB, MyPlace places, Coordinate coordinate) {
+    public static void appendGeoCoordinate(JsonNode rootNode, StringBuilder admSB, MyPlace places, Coordinate coordinate)  throws Exception {
         StringBuilder sbGeoCoordinate = new StringBuilder();
         if (!coordinate.getcLat().equals("")) {
             sbGeoCoordinate.append("point(\"").append(coordinate.getcLong()).append(",").append(coordinate.getcLat()).append("\")");
@@ -106,7 +104,7 @@ public class Tweet {
         }
     }
 
-    public static void appendGeoTag(USGeoGnosis gnosis, boolean requireGeoField, StringBuilder admSB, MyPlace places, Coordinate coordinate) throws UnknownPlaceException {
+    public static void appendGeoTag(USGeoGnosis gnosis, boolean requireGeoField, StringBuilder admSB, MyPlace places, Coordinate coordinate) throws Exception {
         try {
             String geoTags = geoTag(gnosis, true, places, coordinate);
             if (geoTags != null) {
@@ -117,7 +115,7 @@ public class Tweet {
         }
     }
 
-    public static void appendUser(JsonNode rootNode, StringBuilder admSB) {
+    public static void appendUser(JsonNode rootNode, StringBuilder admSB) throws Exception {
         ADM.keyValueToSb(admSB, USER, User.toADM(rootNode));
     }
 
@@ -162,13 +160,13 @@ public class Tweet {
         return false;
     }
 
-    public static String toADM(String ln, USGeoGnosis gnosis, boolean requireGeoField) throws UnknownPlaceException, IOException {
+    public static String toADM(String ln, USGeoGnosis gnosis, boolean requireGeoField)  throws Exception{
         StringBuilder admSB = new StringBuilder();
         ObjectMapper objectMapper = new ObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL);
         MyPlace place = new MyPlace();//field: tweet->place
         Coordinate coordinate = new Coordinate();
         admSB.append("{");
-        try {
+        //try {
             JsonNode rootNode = objectMapper.readTree(ln);
             //
             appendTweetPlainFields(rootNode, admSB);
@@ -183,9 +181,9 @@ public class Tweet {
             appendGeoTag(gnosis, true, admSB, place, coordinate);
             appendUser(rootNode, admSB);
             admSB.append("}");
-        } catch (Exception ex) {
-            throw ex;
-        }
+//        } catch (Exception ex) {
+//            throw ex;
+//        }
         return admSB.toString();
     }
 

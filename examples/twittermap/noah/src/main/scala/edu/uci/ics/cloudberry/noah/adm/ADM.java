@@ -1,11 +1,9 @@
 package edu.uci.ics.cloudberry.noah.adm;
 
-import edu.uci.ics.cloudberry.util.Rectangle;
-import org.apache.commons.lang3.StringEscapeUtils;
-import twitter4j.GeoLocation;
+import twitter4j.TwitterException;
+
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 
 public class ADM {
@@ -41,45 +39,46 @@ public class ADM {
         return "datetime(\"" + ADMDateFormat.format(jdate) + "T" + ADMTimeFormat.format(jdate) + "\")";
     }
 
-    public static String mkDateTimeStringFromTweet(String srcDateTimeString) {
+    public static String mkDateTimeStringFromTweet(String srcDateTimeString) throws TwitterException {
         try {
             Date dt = new Date(srcDateTimeFmt.parse(srcDateTimeString).getTime());
             StringBuilder sbDateTime = new StringBuilder();
             sbDateTime.append("datetime(\"").append(ADMDateFormat.format(dt)).append("T").append(ADMTimeFormat.format(dt)).append("\")");
             return sbDateTime.toString();
-        } catch (Exception ex) {
-            return null;
+        }catch (ParseException parseEx){
+            throw new TwitterException("unknown datatime");
         }
     }
 
-    public static String mkDateStringFromTweet(String srcDateTimeString) {
+    public static String mkDateStringFromTweet(String srcDateTimeString) throws TwitterException {
         try {
             Date dt = new Date(srcDateTimeFmt.parse(srcDateTimeString).getTime());
             StringBuilder sbDateTime = new StringBuilder();
             sbDateTime.append("date(\"").append(ADMDateFormat.format(dt)).append("\")");
             return sbDateTime.toString();
-        } catch (Exception ex) {
-            return null;
+        }catch (ParseException parseEx){
+            throw new TwitterException("unknown datatime");
         }
     }
 
-    public static void keyValueToSb(StringBuilder sb, String key, String val) {
-        sb.append(mkQuote(key)).append(":").append(val.replaceAll("\\s+", " "));
+    public static void keyValueToSb(StringBuilder sb, String key, String val) throws Exception{
+        try {
+            sb.append(mkQuoteOnly(key)).append(":").append(val.replaceAll("\\s+", " "));
+        }catch (Exception ex){
+//            System.out.println("sb:"+sb.toString());
+//            System.out.println("key:"+key.toString());
+//            System.out.println("val:"+val.toString());
+            throw new Exception();
+        }
     }
 
-    public static void keyValueToSbWithComma(StringBuilder sb, String key, String val) {
+    public static void keyValueToSbWithComma(StringBuilder sb, String key, String val) throws Exception {
         keyValueToSb(sb, key, val);
         sb.append(",");
     }
 
     public static String mkPoint(String lng, String lat) {
         return "point(\"" + lng + "," + lat + "\")";
-    }
-
-    public static String mkQuote(String str) {// quote and escape
-        StringBuilder sbQuote = new StringBuilder();
-        sbQuote.append('"').append(StringEscapeUtils.escapeJava(str)).append('"');
-        return sbQuote.toString();
     }
 
     public static String mkQuoteOnly(String str) {
